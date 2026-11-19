@@ -187,6 +187,27 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_clear_pending(args: argparse.Namespace) -> int:
+    config = Config.load(args.config)
+    storage = Storage(config.db_path)
+    try:
+        pending = storage.stats()["pending"]
+        if not pending:
+            console.print("[green]Nothing pending.[/]")
+            return 0
+        if not args.yes:
+            console.print(
+                f"[yellow]{pending} pending jobs will be marked as seen.[/] "
+                "Re-run with --yes to confirm."
+            )
+            return 1
+        cleared = storage.clear_pending()
+    finally:
+        storage.close()
+    console.print(f"[green]Cleared {cleared} pending job(s).[/] Future runs will alert only on new postings.")
+    return 0
+
+
 # ----------------------------------------------------------------------
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -214,6 +235,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_stats = sub.add_parser("stats", help="show database statistics")
     common(p_stats)
     p_stats.set_defaults(func=cmd_stats)
+
+    p_clear = sub.add_parser("clear-pending", help="mark the queued backlog as seen")
+    common(p_clear)
+    p_clear.add_argument("--yes", action="store_true", help="confirm the clear")
+    p_clear.set_defaults(func=cmd_clear_pending)
 
     p_src = sub.add_parser("sources", help="list sources and their status")
     common(p_src)

@@ -62,6 +62,9 @@ Run it:
 
 # database stats
 .venv/bin/python -m jobagent stats
+
+# mark the queued backlog as seen (fresh start)
+.venv/bin/python -m jobagent clear-pending --yes
 ```
 
 ---

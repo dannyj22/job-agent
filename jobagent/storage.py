@@ -93,6 +93,12 @@ class Storage:
         )
         self.conn.commit()
 
+    def clear_pending(self) -> int:
+        """Mark every queued job as seen and return how many were cleared."""
+        cursor = self.conn.execute("UPDATE jobs SET notified = 1 WHERE notified = 0")
+        self.conn.commit()
+        return cursor.rowcount
+
     def exists(self, fingerprint: str) -> bool:
         row = self.conn.execute(
             "SELECT 1 FROM jobs WHERE fingerprint = ?", (fingerprint,)
