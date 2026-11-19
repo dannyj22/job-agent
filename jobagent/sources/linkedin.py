@@ -52,6 +52,41 @@ class LinkedInSource(JobSource):
         return _dedupe(jobs)
 
 
+class LinkedInLocalSource(LinkedInSource):
+    """Same guest endpoint, but without the remote-only filter.
+
+    Used to cover a city or country directly (e.g. "Nigeria"), where most
+    postings are onsite or hybrid and must not be discarded by the global
+    remote-only rule.
+    """
+
+    name = "linkedin_local"
+
+    def fetch(self) -> list[Job]:
+        location = str(self.settings.get("location", "Nigeria"))
+        max_per_query = int(self.settings.get("max_per_query", 25))
+        delay = float(self.settings.get("delay_seconds", 2))
+        jobs: list[Job] = []
+
+        for index, query in enumerate(self.queries):
+            if index:
+                time.sleep(delay)
+            params = {
+                "keywords": query,
+                "location": location,
+                "start": 0,
+                "f_TPR": "r604800",  # posted in the last 7 days
+            }
+            try:
+                html = self.get_text(SEARCH_URL, params=params)
+            except Exception as exc:
+                logger.warning("LinkedIn local query %r failed: %s", query, exc)
+                continue
+            jobs.extend(_parse_cards(html, self.name)[:max_per_query])
+
+        return _dedupe(jobs)
+
+
 def _parse_cards(html: str, source: str) -> list[Job]:
     soup = BeautifulSoup(html, "html.parser")
     jobs: list[Job] = []

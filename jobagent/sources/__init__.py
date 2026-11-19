@@ -11,7 +11,7 @@ from .base import JobSource
 from .hackernews import HackerNewsSource
 from .indeed import IndeedSource
 from .jobicy import JobicySource
-from .linkedin import LinkedInSource
+from .linkedin import LinkedInLocalSource, LinkedInSource
 from .remoteok import RemoteOKSource
 from .remotive import RemotiveSource
 from .weworkremotely import WeWorkRemotelySource
@@ -28,6 +28,7 @@ SOURCE_CLASSES: dict[str, type[JobSource]] = {
         WeWorkRemotelySource,
         HackerNewsSource,
         LinkedInSource,
+        LinkedInLocalSource,
         IndeedSource,
         AdzunaSource,
     )

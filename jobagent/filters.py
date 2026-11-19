@@ -62,6 +62,17 @@ class JobFilter:
         self.min_score = int(self.config.get("min_score", 4))
         self.title_bonus = int(self.config.get("title_bonus", 3))
         self.remote_only = bool(self.config.get("remote_only", False))
+        # Sources that may post non-remote jobs even when remote_only is on
+        # (e.g. linkedin_local scraping a country's onsite market).
+        self.remote_exempt_sources = {
+            str(x) for x in self.config.get("remote_exempt_sources", []) or []
+        }
+        # Per-source score thresholds; local/onsite feeds use broader titles
+        # that the remote-focused keyword list under-scores.
+        self.min_score_by_source = {
+            str(name): int(value)
+            for name, value in (self.config.get("min_score_by_source") or {}).items()
+        }
         self.locations = [str(x) for x in self.config.get("locations", []) or []]
 
         groups = self.config.get("include_keywords", {}) or {}
@@ -107,18 +118,23 @@ class JobFilter:
         if any(pattern.search(title) for _, pattern in self.keywords["core"]):
             score += self.title_bonus
 
-        if self.remote_only and not (job.remote or is_remote(job.location)):
+        if (
+            self.remote_only
+            and job.source not in self.remote_exempt_sources
+            and not (job.remote or is_remote(job.location))
+        ):
             return FilterResult(False, score=score, matched=matched, reason="not remote")
 
         if not job.matches_location(self.locations):
             return FilterResult(False, score=score, matched=matched, reason="location")
 
-        if score < self.min_score:
+        threshold = self.min_score_by_source.get(job.source, self.min_score)
+        if score < threshold:
             return FilterResult(
                 False,
                 score=score,
                 matched=matched,
-                reason=f"low score ({score} < {self.min_score})",
+                reason=f"low score ({score} < {threshold})",
             )
 
         return FilterResult(

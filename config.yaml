@@ -14,6 +14,15 @@ filters:
   # A job must reach this score to alert. Raise it for fewer, more relevant jobs.
   min_score: 4
 
+  # Sources allowed to post non-remote jobs even with remote_only on
+  # (linkedin_local scrapes a country's onsite market).
+  remote_exempt_sources:
+    - linkedin_local
+
+  # Score thresholds override for specific sources.
+  min_score_by_source:
+    linkedin_local: 1
+
   # Any of these makes the job skipped entirely.
   exclude_keywords:
     - sales
@@ -160,6 +169,18 @@ sources:
       - full stack developer
     max_per_query: 25
     delay_seconds: 2
+  linkedin_local:
+    # Onsite/hybrid roles in a specific place. JobMatcher uses these for
+    # location-aware matching (jobs near the candidate); Discord still
+    # alerts on remote-only.
+    enabled: true
+    location: Nigeria
+    queries:
+      - software engineer
+      - frontend developer
+      - backend developer
+    max_per_query: 25
+    delay_seconds: 3
   indeed:
     # Best effort: Indeed serves a captcha to most servers. See README.
     enabled: true
