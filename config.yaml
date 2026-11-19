@@ -1,0 +1,175 @@
+# ---------------------------------------------------------------------------
+# Job Agent configuration
+# Edit keywords/categories here; no code changes needed.
+# ---------------------------------------------------------------------------
+
+database:
+  path: data/jobs.db
+
+logging:
+  level: INFO
+  file: logs/jobagent.log
+
+filters:
+  # A job must reach this score to alert. Raise it for fewer, more relevant jobs.
+  min_score: 4
+
+  # Any of these makes the job skipped entirely.
+  exclude_keywords:
+    - sales
+    - recruiter
+    - commission only
+    - unpaid
+    - internship
+    - "crypto trader"
+    - adult
+
+  # Weighted keyword groups. Word-boundary matched, case-insensitive.
+  include_keywords:
+    core:
+      - react
+      - reactjs
+      - "react.js"
+      - nextjs
+      - "next.js"
+      - node
+      - "node.js"
+      - nodejs
+      - javascript
+      - typescript
+      - "full stack"
+      - fullstack
+      - "full-stack"
+      - "rest api"
+      - restful
+      - express
+      - html
+      - css
+      - tailwind
+      - database
+      - sql
+      - mongodb
+      - postgres
+      - postgresql
+      - mysql
+      - prisma
+      - graphql
+    adjacent:
+      - vue
+      - angular
+      - svelte
+      - python
+      - django
+      - flask
+      - fastapi
+      - php
+      - laravel
+      - ruby
+      - rails
+      - java
+      - spring
+      - "c#"
+      - ".net"
+      - golang
+      - rust
+      - aws
+      - azure
+      - gcp
+      - docker
+      - kubernetes
+      - redis
+      - firebase
+      - supabase
+      - jest
+      - cypress
+      - playwright
+      - microservices
+      - wordpress
+      - shopify
+      - webflow
+      - flutter
+      - "react native"
+      - swift
+      - kotlin
+      - devops
+      - sre
+    general:
+      - software engineer
+      - software developer
+      - web developer
+      - frontend
+      - front end
+      - backend
+      - back end
+      - engineer
+      - developer
+      - programmer
+
+  weights:
+    core: 4
+    adjacent: 2
+    general: 1
+
+  # Extra points when a core keyword appears in the job title.
+  title_bonus: 3
+
+  # Leave empty to accept every location. Otherwise keep only jobs whose
+  # location/remote flag matches one of these (case-insensitive substrings).
+  locations: []
+
+notify:
+  discord:
+    # Max job alerts sent per run (keeps the channel readable).
+    max_jobs_per_run: 20
+    # Discord allows max 10 embeds per message.
+    embeds_per_message: 10
+
+sources:
+  remoteok:
+    enabled: true
+  remotive:
+    enabled: true
+    limit: 120
+  jobicy:
+    enabled: true
+    count: 50
+  arbeitnow:
+    enabled: true
+    pages: 2
+  weworkremotely:
+    enabled: true
+    feeds:
+      - https://weworkremotely.com/categories/remote-programming-jobs.rss
+      - https://weworkremotely.com/categories/remote-full-stack-programming-jobs.rss
+      - https://weworkremotely.com/categories/remote-front-end-programming-jobs.rss
+      - https://weworkremotely.com/categories/remote-back-end-programming-jobs.rss
+  hackernews:
+    enabled: true
+    max_comments: 120
+  linkedin:
+    enabled: true
+    location: Remote
+    # Guest search endpoint. Keep the list short to stay polite.
+    queries:
+      - react developer
+      - next.js developer
+      - node.js developer
+      - full stack developer
+    max_per_query: 25
+    delay_seconds: 2
+  indeed:
+    # Best effort: Indeed serves a captcha to most servers. See README.
+    enabled: true
+    location: Remote
+    queries:
+      - react developer
+      - node.js developer
+      - full stack developer
+  adzuna:
+    # Requires ADZUNA_APP_ID / ADZUNA_APP_KEY in .env
+    enabled: false
+    country: us
+    queries:
+      - react developer
+      - node.js developer
+      - full stack developer
