@@ -42,6 +42,7 @@ class Config:
     base_dir: Path
     data: dict[str, Any] = field(default_factory=dict)
     discord_webhook: str = ""
+    discord_mention: str = ""
     adzuna_app_id: str = ""
     adzuna_app_key: str = ""
     indeed_proxy: str = ""
@@ -65,6 +66,10 @@ class Config:
             base_dir=base_dir,
             data=data,
             discord_webhook=os.getenv("DISCORD_WEBHOOK_URL", "").strip(),
+            discord_mention=os.getenv(
+                "DISCORD_MENTION_USER_ID",
+                str(data.get("notify", {}).get("discord", {}).get("mention", "")),
+            ).strip(),
             adzuna_app_id=os.getenv("ADZUNA_APP_ID", "").strip(),
             adzuna_app_key=os.getenv("ADZUNA_APP_KEY", "").strip(),
             indeed_proxy=os.getenv("INDEED_PROXY", "").strip(),

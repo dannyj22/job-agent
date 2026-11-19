@@ -106,6 +106,10 @@ Everything lives in [`config.yaml`](config.yaml):
 | `sources.*.enabled` | Turn individual boards on/off. |
 | `notify.discord.max_jobs_per_run` | Cap alerts per run. |
 
+Set `DISCORD_MENTION_USER_ID` in `.env` to your numeric Discord user ID to get a
+real ping (and therefore a phone push) on every alert, even if the channel is set
+to "Only @mentions".
+
 Each board's search queries (LinkedIn, Indeed, Adzuna) are also in
 `config.yaml`.
 

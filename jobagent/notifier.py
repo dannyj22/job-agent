@@ -38,6 +38,13 @@ class DiscordNotifier:
         self.embeds_per_message = int(
             config.discord.get("embeds_per_message", 10) or 10
         )
+        self.mention = getattr(config, "discord_mention", "") or ""
+        if self.mention and not self.mention.isdigit():
+            logger.warning(
+                "Ignoring DISCORD_MENTION_USER_ID %r: expected a numeric user ID",
+                self.mention,
+            )
+            self.mention = ""
         if not self.webhook:
             raise NotificationError(
                 "DISCORD_WEBHOOK_URL is not set. Copy .env.example to .env and add "
@@ -54,10 +61,12 @@ class DiscordNotifier:
             batch = jobs[start : start + size]
             payload = {
                 "username": "JobAgent",
-                "content": _header(len(jobs)) if start == 0 else None,
+                "content": self._content(len(jobs)) if start == 0 else None,
                 "embeds": [self._embed(job) for job in batch],
             }
             payload = {k: v for k, v in payload.items() if v is not None}
+            if self.mention:
+                payload["allowed_mentions"] = {"parse": [], "users": [self.mention]}
             self._post(payload)
             sent += len(batch)
             if start + size < len(jobs):
@@ -82,6 +91,10 @@ class DiscordNotifier:
         self.send_jobs([job])
 
     # ------------------------------------------------------------------
+    def _content(self, total: int) -> str:
+        header = _header(total)
+        return f"<@{self.mention}> {header}" if self.mention else header
+
     def _embed(self, job: Job) -> dict[str, Any]:
         fields: list[dict[str, Any]] = []
 

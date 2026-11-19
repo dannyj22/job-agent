@@ -171,6 +171,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
     checks.append(("config.yaml", (config.base_dir / "config.yaml").exists(), str(config.base_dir / "config.yaml")))
     checks.append(("Discord webhook", bool(config.discord_webhook), "set in .env" if config.discord_webhook else "missing DISCORD_WEBHOOK_URL"))
+    checks.append(("Discord mention", bool(config.discord_mention), config.discord_mention or "not set (no ping)"))
     checks.append(("Database folder", True, str(config.db_path.parent)))
 
     enabled = [name for name in SOURCE_CLASSES if config.source_enabled(name)]
