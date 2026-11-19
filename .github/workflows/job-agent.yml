@@ -1,0 +1,60 @@
+name: Job Agent
+
+on:
+  schedule:
+    # Every 30 minutes. GitHub may delay scheduled runs by a few minutes.
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: job-agent
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # The SQLite database lives outside git, so keep it warm between runs.
+      - name: Restore job database
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: jobagent-db-${{ github.run_id }}
+          restore-keys: |
+            jobagent-db-
+
+      - name: Run agent
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_MENTION_USER_ID: ${{ secrets.DISCORD_MENTION_USER_ID }}
+        run: |
+          if [ ! -f data/jobs.db ]; then
+            echo "First cloud run: building the database without sending alerts..."
+            python -m jobagent run --no-notify
+            python -m jobagent clear-pending --yes
+          fi
+          python -m jobagent run
+
+      - name: Save job database
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data
+          key: jobagent-db-${{ github.run_id }}

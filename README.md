@@ -89,8 +89,37 @@ Change the schedule by passing a cron expression:
 ./scripts/install-cron.sh "0 * * * *"      # hourly
 ```
 
-> Cron only runs while the computer is on. For always-on alerts, move the same
-> command to a small VPS or a GitHub Actions scheduled workflow.
+> Cron only runs while the computer is on.
+
+---
+
+## Run in the cloud (GitHub Actions, every 30 minutes)
+
+The repo includes `.github/workflows/job-agent.yml`. It runs the agent every 30
+minutes on GitHub's servers, so alerts keep arriving even when your computer is
+off. Discord queues messages while your phone is off and delivers them when it
+comes back online.
+
+Setup (already done if the repo was pushed with `gh`):
+
+```bash
+gh secret set DISCORD_WEBHOOK_URL        # paste the webhook URL when prompted
+gh secret set DISCORD_MENTION_USER_ID    # paste your numeric user ID
+gh workflow run job-agent.yml            # trigger immediately
+gh run list --workflow job-agent.yml     # check results
+```
+
+Notes:
+
+- Keep the repository **public** for unlimited free Actions minutes. No secrets
+  live in the repo: `.env`, `data/` and logs are gitignored.
+- The SQLite database is persisted between cloud runs with the Actions cache.
+  On the very first run it seeds itself without sending a flood of alerts.
+- `keepalive.yml` makes a monthly no-op commit so GitHub does not disable the
+  schedule after 60 days of inactivity.
+- Scheduled runs can be delayed by a few minutes at busy times.
+- Run only one scheduler at a time (cloud **or** local cron) to avoid duplicate
+  alerts.
 
 ---
 
