@@ -113,6 +113,9 @@ filters:
   # Extra points when a core keyword appears in the job title.
   title_bonus: 3
 
+  # Only keep jobs marked remote (in the location or by the source).
+  remote_only: true
+
   # Leave empty to accept every location. Otherwise keep only jobs whose
   # location/remote flag matches one of these (case-insensitive substrings).
   locations: []

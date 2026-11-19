@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable
 
 from .models import Job
+from .utils import is_remote
 
 CATEGORY_KEYWORDS: dict[str, list[str]] = {
     "fullstack": ["full stack", "fullstack", "full-stack", "mern", "mean stack"],
@@ -60,6 +61,7 @@ class JobFilter:
         self.config = config or {}
         self.min_score = int(self.config.get("min_score", 4))
         self.title_bonus = int(self.config.get("title_bonus", 3))
+        self.remote_only = bool(self.config.get("remote_only", False))
         self.locations = [str(x) for x in self.config.get("locations", []) or []]
 
         groups = self.config.get("include_keywords", {}) or {}
@@ -104,6 +106,9 @@ class JobFilter:
 
         if any(pattern.search(title) for _, pattern in self.keywords["core"]):
             score += self.title_bonus
+
+        if self.remote_only and not (job.remote or is_remote(job.location)):
+            return FilterResult(False, score=score, matched=matched, reason="not remote")
 
         if not job.matches_location(self.locations):
             return FilterResult(False, score=score, matched=matched, reason="location")

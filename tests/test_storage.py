@@ -37,6 +37,16 @@ def test_tracking_params_do_not_create_duplicates(tmp_path):
     storage.close()
 
 
+def test_duplicate_role_with_different_url_is_skipped(tmp_path):
+    storage = Storage(tmp_path / "jobs.db")
+    first = make_job(url="https://site-a.com/job/1")
+    second = make_job(url="https://site-b.com/job/9", source="other")
+    assert storage.save_if_new(first)
+    assert not storage.save_if_new(second)
+    assert storage.stats()["total"] == 1
+    storage.close()
+
+
 def test_mark_notified(tmp_path):
     storage = Storage(tmp_path / "jobs.db")
     job = make_job()

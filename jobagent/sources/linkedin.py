@@ -40,6 +40,7 @@ class LinkedInSource(JobSource):
                 "location": location,
                 "start": 0,
                 "f_TPR": "r604800",  # posted in the last 7 days
+                "f_WT": "2",  # remote workplace type
             }
             try:
                 html = self.get_text(SEARCH_URL, params=params)

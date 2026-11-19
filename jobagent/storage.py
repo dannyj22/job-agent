@@ -53,6 +53,15 @@ class Storage:
     # ------------------------------------------------------------------
     def save_if_new(self, job: Job) -> bool:
         """Insert the job. Returns True only when it was not already known."""
+        # Cross-source duplicates often use different URLs for the same role,
+        # so also treat an identical title+company as already seen.
+        duplicate = self.conn.execute(
+            "SELECT 1 FROM jobs WHERE lower(title) = lower(?) AND lower(company) = lower(?) LIMIT 1",
+            (job.title, job.company),
+        ).fetchone()
+        if duplicate:
+            return False
+
         now = datetime.now(timezone.utc).isoformat(timespec="seconds")
         try:
             cursor = self.conn.execute(

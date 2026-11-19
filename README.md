@@ -106,6 +106,7 @@ Everything lives in [`config.yaml`](config.yaml):
 | `filters.include_keywords.general` | Generic dev words. Weight 1. |
 | `filters.exclude_keywords` | Any match drops the job (sales, internship…). |
 | `filters.locations` | Keep only these locations; empty = accept all. Remote always passes. |
+| `filters.remote_only` | `true` = drop any job not marked remote. |
 | `sources.*.enabled` | Turn individual boards on/off. |
 | `notify.discord.max_jobs_per_run` | Cap alerts per run. |
 

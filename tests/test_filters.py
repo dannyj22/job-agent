@@ -75,3 +75,15 @@ def test_word_boundaries_do_not_match_substrings():
     # "reactive" must not count as "react"
     result = job_filter.evaluate(make_job(title="Reactive Systems Engineer"))
     assert "react" not in result.matched
+
+
+def test_remote_only_rejects_onsite():
+    job_filter = JobFilter(dict(BASE_CONFIG, remote_only=True))
+    onsite = make_job(title="React Developer", location="Berlin", remote=False)
+    assert not job_filter.evaluate(onsite).accepted
+
+    remote = make_job(title="React Developer", location="Remote")
+    assert job_filter.evaluate(remote).accepted
+
+    flagged = make_job(title="React Developer", location="", remote=True)
+    assert job_filter.evaluate(flagged).accepted
